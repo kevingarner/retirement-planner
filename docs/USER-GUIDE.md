@@ -19,7 +19,19 @@ The app opens with example numbers. Replace them with yours, top to bottom in th
 
 That's a working plan. Everything else — the spending step-downs by age, events like inheritances or weddings, the detailed tax model, Roth conversions — is refinement, covered below.
 
-**Already retired?** The app handles that fine — just set the retirement ages at or below your current ages. The plan starts in the withdrawal phase immediately, contributions are ignored, and the "at retirement" tile shows "—" since that's behind you. If you're already collecting Social Security, enter **this year's actual benefit** with your real (past) claim age. The claiming-age comparison on the Strategies page only matters if you haven't claimed yet.
+### Already retired? Start here instead
+
+The steps above are written for someone still working and saving. If you're already retired, the app works just as well, but the order — and what you enter — is different:
+
+1. **People** — set each retirement age **at or below your current age**. That's what switches the plan straight into withdrawal mode: contributions are ignored automatically, and the "at retirement" stat tile shows "—" since that's behind you.
+2. **Portfolio & returns** — your total balance today, right now, not a future projection.
+3. **Retirement spending phases** — this is your *actual current* spending, not an estimate of something years away. Set Go-Go annual spending to what you really spend now, and check which phase (Go-Go / Slow-Go / No-Go) matches your age — you may already be in the second or third one.
+4. **Health insurance & Medicare** — if either of you is 65+, this section is mostly about Medicare Part B/D premiums, which the app already assumes; if either of you is under 65, set the pre-Medicare premium to what you're actually paying.
+5. **Social Security** — if you're already claiming, enter **this year's actual benefit** (from your SSA statement or bank deposit) with your **real, past claim age** — not an estimate for a future age. The claiming-age comparison on the Strategies page (§4) is only useful for benefits you haven't started yet.
+6. **Read the verdict**, then go straight to **Strategies** and **Monte Carlo / Backtest** (§4) rather than Sensitivity's "earliest retirement age" solver, which doesn't apply to you. Withdrawal strategy (fixed vs. guardrails) and sequence-of-returns risk are live concerns when you're actively drawing down, not distant what-ifs.
+7. **Export** a backup once your numbers are in.
+
+Skipping the **Contributions** section is fine — it only affects money going in, and you're not adding any. If you switch to detailed mode for the sharper tax modeling, just enter your real current account balances in the three buckets (taxable / traditional / Roth) and move on.
 
 ---
 
