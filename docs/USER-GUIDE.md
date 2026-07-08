@@ -43,6 +43,10 @@ Everything autosaves to the browser as you type — there is no Save button. The
 
 ![The report](img/report.png)
 
+**Where your data actually lives.** Nothing you type is ever sent anywhere — there's no server, no account, no network request carrying your numbers. Everything is saved by the browser to a small file on your own disk (technically a local database, in the browser's profile folder), the same way a document saved to your Desktop lives on disk. That means it has whatever protection your device already has — your login password, full-disk encryption if it's turned on — and nothing more or less. Only this app's own page can read it through the browser (other websites you visit can't reach it), but anyone with access to your logged-in account, or malware running on it, has the same access to it as to any other file you own.
+
+Practically: on your own personal computer or phone, this is no different from any other saved file, and the normal (non-private) browsing you're already using is correct — it's what lets the app remember your plan between visits. If you're ever using this on a computer other people also log into (a shared family computer, a library machine), a **private/incognito browsing window** is worth using instead — it keeps the data from persisting on that shared device after you close the window. The tradeoff: private windows don't save anything between visits at all, so you'd need to **Export** before closing and **Import** again next time, rather than relying on autosave.
+
 ## 3. Entering your plan
 
 ![Inputs panel](img/inputs-panel.png)

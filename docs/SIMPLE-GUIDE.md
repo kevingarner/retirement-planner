@@ -1,6 +1,6 @@
 # A Simple Guide to Your Retirement Plan
 
-Kevin made you a private, simple tool that shows how your retirement savings are doing. It's just for you — nothing you type into it is sent to Kevin, to a bank, or to anyone else. It stays right on the screen in front of you.
+Kevin made you a private, simple tool that shows how your retirement savings are doing. It's just for you — nothing you type into it is sent to Kevin, to a bank, or to anyone else. It's saved right on your own computer or phone, the same as any other file you'd save there — so use it like you normally browse the internet, on a device that's just yours. If you're ever using it on a computer other people share (like one at a library), ask Kevin about that first.
 
 ## Opening it
 
