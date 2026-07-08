@@ -45,8 +45,9 @@ body {
 
 .app-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 24px;
+  gap: 10px 24px;
   padding: 10px 20px;
   background: var(--surface);
   border-bottom: 1px solid var(--grid);
@@ -82,6 +83,8 @@ body {
 }
 .header-actions {
   display: flex;
+  flex-shrink: 0;
+  align-items: center;
   gap: 8px;
 }
 
@@ -337,12 +340,14 @@ select.num.select {
 }
 
 .btn {
+  display: inline-block;
   border: 1px solid var(--axis);
   background: var(--page);
   color: var(--ink);
   border-radius: 8px;
   padding: 7px 14px;
   font-size: 13px;
+  text-decoration: none;
   cursor: pointer;
 }
 .btn:hover:not(:disabled) {

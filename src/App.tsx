@@ -102,6 +102,15 @@ export default function App() {
           <button className="btn subtle" onClick={() => fileRef.current?.click()}>
             Import
           </button>
+          <a
+            className="btn subtle"
+            href="https://github.com/kevingarner/retirement-planner/blob/main/docs/USER-GUIDE.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Opens the user guide in a new tab"
+          >
+            Help
+          </a>
           <input
             ref={fileRef}
             type="file"
