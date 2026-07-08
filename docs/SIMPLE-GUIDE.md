@@ -6,7 +6,7 @@ Kevin made you a private, simple tool that shows how your retirement savings are
 
 Click this link:
 
-**[PASTE-YOUR-LINK-HERE]**
+**[kevingarner.github.io/retirement-planner](https://kevingarner.github.io/retirement-planner/)**
 
 Tip: ask Kevin to help you save it as a bookmark or add it to your home screen, so next time you can get to it with one click instead of searching for this page again.
 
