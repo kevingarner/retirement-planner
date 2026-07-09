@@ -4,6 +4,8 @@
 
 A local, private retirement planning app: model your accounts, spending, Social Security, and taxes, plus tools a spreadsheet can't do (Monte Carlo, historical backtesting, sensitivity solvers, scenario comparison).
 
+![Demo: editing the portfolio balance and touring Monte Carlo, Backtest, and Strategies](docs/img/demo.gif)
+
 All data stays on this machine: inputs, budget, and scenarios are saved in the browser's localStorage, with JSON export/import for backups. The header shows how long it's been since the last export — browsers can wipe localStorage, so back up regularly. The **Report** button renders a one-page printable summary (verdict, assumptions, outcome stats including Monte Carlo and backtest success, charts, year table) — use the browser's print dialog to save it as a PDF.
 
 ## Run it

@@ -2,6 +2,8 @@
 
 A walkthrough of everyday use, plus the yearly-update checklist that keeps the model honest. All screenshots show the app's generic example plan, not anyone's real numbers.
 
+![Demo: editing the portfolio balance and touring Monte Carlo, Backtest, and Strategies](img/demo.gif)
+
 ---
 
 ## Quick start — your plan in 10 minutes
