@@ -593,9 +593,19 @@ select.num.select {
 }
 
 /* ---- Print: show only the report ---- */
+@page {
+  size: landscape;
+  margin: 12mm;
+}
 @media print {
-  body:has(.report-overlay) .app {
+  /* The overlay lives INSIDE .app, so hide its siblings — not .app itself */
+  body:has(.report-overlay) .app > *:not(.report-overlay) {
     display: none !important;
+  }
+  body:has(.report-overlay) .app {
+    display: block;
+    height: auto;
+    overflow: visible;
   }
   .no-print {
     display: none !important;

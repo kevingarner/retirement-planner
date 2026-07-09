@@ -16,15 +16,48 @@ export function retirementYear(inputs: PlanInputs, who: 'you' | 'spouse'): numbe
   return inputs.startYear + p.retirementAge - p.currentAge;
 }
 
+// Single-person plans reuse the couples engine with the spouse neutralized:
+// zero income/premiums, and ages/eligibility mirroring "you" so every
+// both-of-us condition (phase, Medicare step-down, SS start) keys off one
+// person. Filing status, FPL household size, and IRMAA person-count need
+// explicit guards in the detailed engine — zeroing can't express those.
+export function effectiveInputs(inputs: PlanInputs): PlanInputs {
+  if (!inputs.single) return inputs;
+  return {
+    ...inputs,
+    survivorOn: false, // no second person whose death could be modeled
+    spouse: {
+      ...inputs.spouse,
+      currentAge: inputs.you.currentAge,
+      retirementAge: inputs.you.retirementAge,
+      lifeExpectancy: inputs.you.lifeExpectancy,
+      medicareEligibilityAge: inputs.you.medicareEligibilityAge,
+      ssStartAge: inputs.you.ssStartAge,
+      annualContribution: 0,
+      ssAnnualBenefit: 0,
+      partBMonthly: 0,
+      partDMonthly: 0,
+      irmaaSurchargePct: 0,
+      partDIrmaaMonthly: 0,
+    },
+    detailed: {
+      ...inputs.detailed,
+      accounts: { ...inputs.detailed.accounts, traditionalSpouse: 0 },
+    },
+  };
+}
+
 // Calendar year SS starts for the earlier of the two spouses (Inputs C44)
-export function ssStartYear(inputs: PlanInputs): number {
+export function ssStartYear(rawInputs: PlanInputs): number {
+  const inputs = effectiveInputs(rawInputs);
   return Math.min(
     inputs.startYear + inputs.you.ssStartAge - inputs.you.currentAge,
     inputs.startYear + inputs.spouse.ssStartAge - inputs.spouse.currentAge,
   );
 }
 
-export function projectionEndYear(inputs: PlanInputs): number {
+export function projectionEndYear(rawInputs: PlanInputs): number {
+  const inputs = effectiveInputs(rawInputs);
   return (
     inputs.startYear +
     Math.max(
@@ -74,7 +107,8 @@ function ssBenefit(
   return b;
 }
 
-export function runProjection(inputs: PlanInputs, returnOverrides?: number[]): ProjectionResult {
+export function runProjection(rawInputs: PlanInputs, returnOverrides?: number[]): ProjectionResult {
+  const inputs = effectiveInputs(rawInputs);
   const { startYear, you, spouse, inflation } = inputs;
   const endYear = projectionEndYear(inputs);
   const retYearYou = retirementYear(inputs, 'you');

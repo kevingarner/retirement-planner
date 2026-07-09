@@ -50,8 +50,14 @@ export function ReportOverlay({ inputs, theme, onClose }: { inputs: PlanInputs; 
         <section className="report-section">
           <h2>Key assumptions</h2>
           <div className="report-summary">
-            <SummaryItem label="Ages today" value={`${inputs.you.currentAge} / ${inputs.spouse.currentAge}`} />
-            <SummaryItem label="Retirement ages" value={`${inputs.you.retirementAge} / ${inputs.spouse.retirementAge}`} />
+            <SummaryItem
+              label={inputs.single ? 'Age today' : 'Ages today'}
+              value={inputs.single ? `${inputs.you.currentAge}` : `${inputs.you.currentAge} / ${inputs.spouse.currentAge}`}
+            />
+            <SummaryItem
+              label={inputs.single ? 'Retirement age' : 'Retirement ages'}
+              value={inputs.single ? `${inputs.you.retirementAge}` : `${inputs.you.retirementAge} / ${inputs.spouse.retirementAge}`}
+            />
             <SummaryItem label="Plan horizon" value={`to age ${inputs.you.lifeExpectancy} (${result.endYear})`} />
             <SummaryItem label="Current portfolio" value={moneyCompact(inputs.currentBalance)} />
             <SummaryItem
@@ -67,7 +73,7 @@ export function ReportOverlay({ inputs, theme, onClose }: { inputs: PlanInputs; 
               label="Social Security"
               value={
                 inputs.includeSS
-                  ? `on, at ${inputs.you.ssStartAge}/${inputs.spouse.ssStartAge}${inputs.ssCutPct > 0 ? `, ${pct(inputs.ssCutPct, 0)} cut from ${inputs.ssCutStartYear}` : ''}`
+                  ? `on, at ${inputs.single ? inputs.you.ssStartAge : `${inputs.you.ssStartAge}/${inputs.spouse.ssStartAge}`}${inputs.ssCutPct > 0 ? `, ${pct(inputs.ssCutPct, 0)} cut from ${inputs.ssCutStartYear}` : ''}`
                   : 'excluded'
               }
             />

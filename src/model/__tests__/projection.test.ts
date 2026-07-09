@@ -10,6 +10,7 @@ import type { PlanInputs } from '../types';
 function testInputs(): PlanInputs {
   return {
     startYear: 2026,
+    single: false,
     taxMode: 'simple',
     detailed: defaultInputs().detailed,
     events: [],

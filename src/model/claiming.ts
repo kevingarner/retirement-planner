@@ -44,14 +44,20 @@ export function compareClaimingStrategies(inputs: PlanInputs): ClaimingResult[] 
   const spousePia = inputs.spouse.ssAnnualBenefit / factor(inputs.spouse.ssStartAge);
   const youIsHigher = youPia >= spousePia;
 
-  const strategies: ClaimingStrategy[] = [
-    { label: 'Both claim at 62', youAge: 62, spouseAge: 62 },
-    { label: 'Both claim at 67 (FRA)', youAge: 67, spouseAge: 67 },
-    { label: 'Both claim at 70', youAge: 70, spouseAge: 70 },
-    youIsHigher
-      ? { label: `${inputs.you.name} at 70, ${inputs.spouse.name} at 62`, youAge: 70, spouseAge: 62 }
-      : { label: `${inputs.spouse.name} at 70, ${inputs.you.name} at 62`, youAge: 62, spouseAge: 70 },
-  ];
+  const strategies: ClaimingStrategy[] = inputs.single
+    ? [
+        { label: 'Claim at 62', youAge: 62, spouseAge: 62 },
+        { label: 'Claim at 67 (FRA)', youAge: 67, spouseAge: 67 },
+        { label: 'Claim at 70', youAge: 70, spouseAge: 70 },
+      ]
+    : [
+        { label: 'Both claim at 62', youAge: 62, spouseAge: 62 },
+        { label: 'Both claim at 67 (FRA)', youAge: 67, spouseAge: 67 },
+        { label: 'Both claim at 70', youAge: 70, spouseAge: 70 },
+        youIsHigher
+          ? { label: `${inputs.you.name} at 70, ${inputs.spouse.name} at 62`, youAge: 70, spouseAge: 62 }
+          : { label: `${inputs.spouse.name} at 70, ${inputs.you.name} at 62`, youAge: 62, spouseAge: 70 },
+      ];
 
   return strategies.map((s) => {
     // A claim age in the past isn't possible — floor at current age

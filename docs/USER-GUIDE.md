@@ -10,7 +10,7 @@ A walkthrough of everyday use, plus the yearly-update checklist that keeps the m
 
 The app opens with example numbers. Replace them with yours, top to bottom in the left panel — nothing you type ever leaves your browser:
 
-1. **People** — your ages, the ages you want to retire, and life expectancy (be generous; running out at 90 because you planned to 85 is the failure that matters). Type your names in the two boxes so the columns are labeled for you — **left is always you, right is your spouse**.
+1. **People** — your ages, the ages you want to retire, and life expectancy (be generous; running out at 90 because you planned to 85 is the failure that matters). Type your names in the two boxes so the columns are labeled for you — **left is always you, right is your spouse**. **No spouse?** Set *Planning for* to **Just me** at the top of this section — the spouse columns disappear, and in detailed tax mode the plan correctly uses single-filer brackets, deduction, and IRMAA tiers.
 2. **Portfolio & returns** — your total invested savings today. Leave the return and inflation assumptions alone for now; the defaults are reasonable.
 3. **Retirement spending phases** — set the Go-Go annual spending: what a year of your life costs, in today's dollars, *excluding* health insurance (the app models that separately). This is the number the whole plan is most sensitive to. If you're not sure, that's what the Budget tab is for — but a rough number gets you started.
 4. **Health insurance & Medicare** — if you'll retire before 65, set the pre-Medicare premium to what a family plan costs (this surprises everyone; it's often $20K+ a year).

@@ -57,3 +57,16 @@ describe('historical backtest', () => {
     expect(stocks.medianFinalBalanceReal).not.toBeCloseTo(bonds.medianFinalBalanceReal, -3);
   });
 });
+
+describe('SS claiming for a single person', () => {
+  it('offers three one-person strategies, delayed claiming collecting more', () => {
+    const i = defaultInputs();
+    i.single = true;
+    const results = compareClaimingStrategies(i);
+    expect(results).toHaveLength(3);
+    expect(results.map((r) => r.label)).toEqual(['Claim at 62', 'Claim at 67 (FRA)', 'Claim at 70']);
+    const at62 = results[0];
+    const at70 = results[2];
+    expect(at70.lifetimeSS).toBeGreaterThan(at62.lifetimeSS);
+  });
+});

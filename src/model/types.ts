@@ -70,6 +70,7 @@ export interface DetailedTaxSettings {
 
 export interface PlanInputs {
   startYear: number; // calendar year of row 0 (Excel: YEAR(TODAY()))
+  single: boolean; // planning for one person: spouse ignored, single filing status in detailed mode
   taxMode: TaxMode;
   detailed: DetailedTaxSettings;
   events: PlanEvent[];

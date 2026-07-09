@@ -57,7 +57,7 @@ Sharing with someone non-technical (a parent, a friend who doesn't want to learn
 
 ## Core model features
 
-Couples model with per-spouse ages/contributions/Medicare/Social Security; Go-Go/Slow-Go/No-Go spending phases; pre-Medicare family premiums stepping down as each spouse reaches Medicare; Medicare Part B/D with IRMAA and its own growth rate; effective-tax gross-up on withdrawals (pre/post-SS rates); SS with COLA and a funding-cut haircut; one-time expense; down-market sequence stress test; long-term care event; cash reserve bucket; survivor scenario.
+Couples model with per-spouse ages/contributions/Medicare/Social Security (or single-person mode — spouse hidden, single filing status throughout); Go-Go/Slow-Go/No-Go spending phases; pre-Medicare family premiums stepping down as each spouse reaches Medicare; Medicare Part B/D with IRMAA and its own growth rate; effective-tax gross-up on withdrawals (pre/post-SS rates); SS with COLA and a funding-cut haircut; one-time expense; down-market sequence stress test; long-term care event; cash reserve bucket; survivor scenario.
 
 ## Verification
 

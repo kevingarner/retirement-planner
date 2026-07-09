@@ -16,8 +16,12 @@ export function InputsPanel({ inputs, onChange }: Props) {
   const det = inputs.detailed;
   const isDetailed = inputs.taxMode === 'detailed';
   const bucketTotal =
-    det.accounts.taxable + det.accounts.traditionalYou + det.accounts.traditionalSpouse + det.accounts.roth;
+    det.accounts.taxable +
+    det.accounts.traditionalYou +
+    (inputs.single ? 0 : det.accounts.traditionalSpouse) +
+    det.accounts.roth;
 
+  // In single mode the paired rows collapse to one column (just "you")
   const pair = (
     label: string,
     render: (p: PersonInputs, setP: (patch: Partial<PersonInputs>) => void) => React.ReactNode,
@@ -26,13 +30,13 @@ export function InputsPanel({ inputs, onChange }: Props) {
     <Field label={label} hint={hint}>
       <span className="pair">
         {render(inputs.you, setYou)}
-        {render(inputs.spouse, setSpouse)}
+        {!inputs.single && render(inputs.spouse, setSpouse)}
       </span>
     </Field>
   );
 
   // Column labels repeated in each section with per-person paired inputs
-  const pairLabels = (
+  const pairLabels = inputs.single ? null : (
     <div className="pair-heading">
       <span />
       <span className="pair">
@@ -45,11 +49,23 @@ export function InputsPanel({ inputs, onChange }: Props) {
   return (
     <div className="inputs-panel">
       <Section title="People">
+        <Field label="Planning for" hint="Just me: spouse inputs are hidden and ignored; detailed mode uses single filing status">
+          <Select
+            value={inputs.single ? 'single' : 'couple'}
+            options={[
+              { value: 'couple', label: 'A couple' },
+              { value: 'single', label: 'Just me' },
+            ]}
+            onChange={(v) => set({ single: v === 'single' })}
+          />
+        </Field>
         <div className="pair-heading">
           <span />
           <span className="pair">
             <input className="num name" value={inputs.you.name} onChange={(e) => setYou({ name: e.target.value })} />
-            <input className="num name" value={inputs.spouse.name} onChange={(e) => setSpouse({ name: e.target.value })} />
+            {!inputs.single && (
+              <input className="num name" value={inputs.spouse.name} onChange={(e) => setSpouse({ name: e.target.value })} />
+            )}
           </span>
         </div>
         {pair('Current age', (p, s) => <IntInput value={p.currentAge} onChange={(v) => s({ currentAge: v })} />)}
@@ -215,12 +231,17 @@ export function InputsPanel({ inputs, onChange }: Props) {
       </Section>
 
       <Section title="Health insurance & Medicare" defaultOpen={false}>
-        <Field label="Pre-Medicare premium (family, today's $)" hint="Annual premium from retirement until Medicare">
+        <Field
+          label={inputs.single ? 'Pre-Medicare premium (today’s $)' : 'Pre-Medicare premium (family, today’s $)'}
+          hint="Annual premium from retirement until Medicare"
+        >
           <MoneyInput value={inputs.preMedicarePremium} onChange={(v) => set({ preMedicarePremium: v })} />
         </Field>
-        <Field label="Premium share once one is on Medicare">
-          <PercentInput value={inputs.premiumPctAfterFirstMedicare} onChange={(v) => set({ premiumPctAfterFirstMedicare: v })} />
-        </Field>
+        {!inputs.single && (
+          <Field label="Premium share once one is on Medicare">
+            <PercentInput value={inputs.premiumPctAfterFirstMedicare} onChange={(v) => set({ premiumPctAfterFirstMedicare: v })} />
+          </Field>
+        )}
         {isDetailed && (
           <>
             <Field label="Model ACA premium subsidies?" hint="Subsidy on the pre-Medicare premium based on each year's MAGI">
@@ -309,9 +330,11 @@ export function InputsPanel({ inputs, onChange }: Props) {
           <Field label={`Traditional — ${inputs.you.name}`} hint="401(k)/IRA, pre-tax">
             <MoneyInput value={det.accounts.traditionalYou} onChange={(v) => setDetailed({ accounts: { ...det.accounts, traditionalYou: v } })} />
           </Field>
-          <Field label={`Traditional — ${inputs.spouse.name}`}>
-            <MoneyInput value={det.accounts.traditionalSpouse} onChange={(v) => setDetailed({ accounts: { ...det.accounts, traditionalSpouse: v } })} />
-          </Field>
+          {!inputs.single && (
+            <Field label={`Traditional — ${inputs.spouse.name}`}>
+              <MoneyInput value={det.accounts.traditionalSpouse} onChange={(v) => setDetailed({ accounts: { ...det.accounts, traditionalSpouse: v } })} />
+            </Field>
+          )}
           <Field label="Roth (combined)">
             <MoneyInput value={det.accounts.roth} onChange={(v) => setDetailed({ accounts: { ...det.accounts, roth: v } })} />
           </Field>
@@ -359,9 +382,11 @@ export function InputsPanel({ inputs, onChange }: Props) {
           <Field label={`RMD start age — ${inputs.you.name}`} hint="73 if born 1951–1959, 75 if born 1960 or later">
             <IntInput value={det.rmdStartAgeYou} onChange={(v) => setDetailed({ rmdStartAgeYou: v })} />
           </Field>
-          <Field label={`RMD start age — ${inputs.spouse.name}`}>
-            <IntInput value={det.rmdStartAgeSpouse} onChange={(v) => setDetailed({ rmdStartAgeSpouse: v })} />
-          </Field>
+          {!inputs.single && (
+            <Field label={`RMD start age — ${inputs.spouse.name}`}>
+              <IntInput value={det.rmdStartAgeSpouse} onChange={(v) => setDetailed({ rmdStartAgeSpouse: v })} />
+            </Field>
+          )}
           <Field label="Heirs' tax rate on traditional $" hint="Used only for the after-tax estate metric">
             <PercentInput value={det.heirTaxRate} onChange={(v) => setDetailed({ heirTaxRate: v })} />
           </Field>
@@ -480,20 +505,22 @@ export function InputsPanel({ inputs, onChange }: Props) {
         </Field>
       </Section>
 
-      <Section title="Survivor scenario" defaultOpen={false}>
-        <Field label={`Model first death (${inputs.you.name} predeceases)?`}>
-          <Toggle value={inputs.survivorOn} onChange={(v) => set({ survivorOn: v })} />
-        </Field>
-        <Field label="Age at first death">
-          <IntInput value={inputs.yourDeathAge} onChange={(v) => set({ yourDeathAge: v })} />
-        </Field>
-        <Field label="Spending change after">
-          <PercentInput value={inputs.survivorSpendingChangePct} onChange={(v) => set({ survivorSpendingChangePct: v })} />
-        </Field>
-        <Field label="Survivor effective tax rate">
-          <PercentInput value={inputs.survivorTaxRate} onChange={(v) => set({ survivorTaxRate: v })} />
-        </Field>
-      </Section>
+      {!inputs.single && (
+        <Section title="Survivor scenario" defaultOpen={false}>
+          <Field label={`Model first death (${inputs.you.name} predeceases)?`}>
+            <Toggle value={inputs.survivorOn} onChange={(v) => set({ survivorOn: v })} />
+          </Field>
+          <Field label="Age at first death">
+            <IntInput value={inputs.yourDeathAge} onChange={(v) => set({ yourDeathAge: v })} />
+          </Field>
+          <Field label="Spending change after">
+            <PercentInput value={inputs.survivorSpendingChangePct} onChange={(v) => set({ survivorSpendingChangePct: v })} />
+          </Field>
+          <Field label="Survivor effective tax rate">
+            <PercentInput value={inputs.survivorTaxRate} onChange={(v) => set({ survivorTaxRate: v })} />
+          </Field>
+        </Section>
+      )}
     </div>
   );
 }

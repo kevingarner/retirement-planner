@@ -204,3 +204,73 @@ describe('already claiming Social Security (start age in the past)', () => {
     expect(row.yourSS).toBeCloseTo(30000 * Math.pow(1 + i.inflation, 7), 4);
   });
 });
+
+describe('single-person mode', () => {
+  function singlePerson(): PlanInputs {
+    const i = defaultInputs();
+    i.single = true;
+    i.you = { ...i.you, currentAge: 60, retirementAge: 62, lifeExpectancy: 90, ssStartAge: 67, ssAnnualBenefit: 30000 };
+    // Deliberately hostile spouse values that must all be ignored
+    i.spouse = { ...i.spouse, currentAge: 40, retirementAge: 70, lifeExpectancy: 100, ssStartAge: 62, ssAnnualBenefit: 50000, annualContribution: 99999 };
+    i.currentBalance = 1200000;
+    i.goGoSpending = 60000;
+    return i;
+  }
+
+  it('simple engine ignores the spouse entirely', () => {
+    const r = runProjection(singlePerson());
+    // Horizon from YOUR life expectancy, not the spouse's 100
+    expect(r.endYear).toBe(defaultInputs().startYear + 30);
+    // Retirement phase begins at YOUR retirement age despite spouse "working to 70"
+    const retRow = r.rows.find((x) => x.yourAge === 62)!;
+    expect(retRow.phase).toBe('Retirement');
+    // No spouse contributions or SS ever
+    expect(r.rows.every((x) => x.spouseContribution === 0)).toBe(true);
+    expect(r.rows.every((x) => x.spouseSS === 0)).toBe(true);
+    // Your SS still arrives at 67
+    const ssRow = r.rows.find((x) => x.yourAge === 67)!;
+    expect(ssRow.yourSS).toBeGreaterThan(0);
+  });
+
+  it('pre-Medicare premium drops to zero (not the couple step-down) at your Medicare age', () => {
+    const i = singlePerson();
+    i.preMedicarePremium = 12000;
+    i.premiumPctAfterFirstMedicare = 0.5;
+    const r = runProjection(i);
+    const before = r.rows.find((x) => x.yourAge === 64)!;
+    const after = r.rows.find((x) => x.yourAge === 65)!;
+    expect(before.preMedicareInsurance).toBeGreaterThan(0);
+    expect(after.preMedicareInsurance).toBe(0);
+  });
+
+  it('detailed engine uses single filing status (more tax than MFJ on the same income)', () => {
+    const single = singlePerson();
+    single.taxMode = 'detailed';
+    single.detailed.accounts = { taxable: 0, taxableBasisPct: 1, traditionalYou: 1200000, traditionalSpouse: 555555, roth: 0 };
+    const couple = JSON.parse(JSON.stringify(single)) as PlanInputs;
+    couple.single = false;
+    couple.detailed.accounts.traditionalSpouse = 0;
+    couple.spouse = { ...couple.spouse, currentAge: 60, retirementAge: 62, lifeExpectancy: 90, ssAnnualBenefit: 0, annualContribution: 0, partBMonthly: 0, partDMonthly: 0 };
+    const rs = runDetailedProjection(single);
+    const rc = runDetailedProjection(couple);
+    // Same income stream, but single brackets bite harder
+    expect(rs.lifetimeTax!).toBeGreaterThan(rc.lifetimeTax!);
+    // And the spouse's traditional bucket was ignored in single mode
+    expect(rs.rows[0].detail!.traditionalBalance).toBeLessThanOrEqual(1200000 * 1.2);
+  });
+
+  it('detailed engine ignores survivor settings when single', () => {
+    const i = singlePerson();
+    i.taxMode = 'detailed';
+    i.survivorOn = true;
+    i.yourDeathAge = 50; // would be "already dead" — must be ignored
+    const r = runDetailedProjection(i);
+    expect(r.rows[0].totalSS).toBe(0); // not the survivor max-of-benefits path with spouse's 50k
+    // Survivor settings must be a no-op: identical result with them off
+    const off = JSON.parse(JSON.stringify(i)) as PlanInputs;
+    off.survivorOn = false;
+    const rOff = runDetailedProjection(off);
+    expect(r.finalBalance).toBe(rOff.finalBalance);
+    expect(r.lifetimeTax).toBe(rOff.lifetimeTax);
+  });
+});

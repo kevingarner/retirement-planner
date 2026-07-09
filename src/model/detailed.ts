@@ -1,5 +1,5 @@
 import type { PlanInputs, ProjectionResult, YearRow, Phase, SpendingPhase, YearDetail } from './types';
-import { runProjection, retirementYear, projectionEndYear, eventFlows } from './projection';
+import { runProjection, retirementYear, projectionEndYear, eventFlows, effectiveInputs } from './projection';
 import { householdTax, acaSubsidy, irmaaAnnualSurcharge } from './tax/federal';
 import {
   BASE_YEAR,
@@ -43,7 +43,8 @@ function ssBenefitDetailed(inputs: PlanInputs, who: 'you' | 'spouse', age: numbe
   return b;
 }
 
-export function runDetailedProjection(inputs: PlanInputs, returnOverrides?: number[]): ProjectionResult {
+export function runDetailedProjection(rawInputs: PlanInputs, returnOverrides?: number[]): ProjectionResult {
+  const inputs = effectiveInputs(rawInputs);
   const { startYear, you, spouse, inflation, detailed: d } = inputs;
   const endYear = projectionEndYear(inputs);
   const retYearYou = retirementYear(inputs, 'you');
@@ -80,7 +81,7 @@ export function runDetailedProjection(inputs: PlanInputs, returnOverrides?: numb
     const phase: Phase =
       yourAge < you.retirementAge && spouseAge < spouse.retirementAge ? 'Accumulation' : 'Retirement';
     const survivorActive = inputs.survivorOn && yourAge >= inputs.yourDeathAge;
-    const status: FilingStatus = survivorActive ? 'single' : 'mfj';
+    const status: FilingStatus = inputs.single || survivorActive ? 'single' : 'mfj';
     const inflFactor = Math.pow(1 + inflation, t);
     const withdrawInfl = inputs.inflationAdjustWithdrawals ? inflFactor : 1;
     const indexFactor = Math.pow(1 + inflation, Math.max(year - BASE_YEAR, 0));
@@ -123,7 +124,8 @@ export function runDetailedProjection(inputs: PlanInputs, returnOverrides?: numb
     // Medicare base premiums (no manual IRMAA inputs in this mode — IRMAA is computed)
     const medGrowth = Math.pow(1 + inputs.medicarePremiumGrowth, t);
     const youOnMedicare = yourAge >= you.medicareEligibilityAge && !survivorActive;
-    const spouseOnMedicare = spouseAge >= spouse.medicareEligibilityAge;
+    // In single mode the mirrored spouse would double the IRMAA person-count
+    const spouseOnMedicare = !inputs.single && spouseAge >= spouse.medicareEligibilityAge;
     const medicareBase =
       (youOnMedicare ? (you.partBMonthly + you.partDMonthly) * 12 * medGrowth : 0) +
       (spouseOnMedicare ? (spouse.partBMonthly + spouse.partDMonthly) * 12 * medGrowth : 0);
@@ -178,7 +180,7 @@ export function runDetailedProjection(inputs: PlanInputs, returnOverrides?: numb
 
     // Fixed-point iteration: taxes ↔ withdrawals ↔ ACA subsidy ↔ conversions.
     // Wrapped in a function so guardrails can re-solve with adjusted spending.
-    const fplBase = survivorActive ? FPL_HOUSEHOLD_1 : FPL_HOUSEHOLD_2;
+    const fplBase = inputs.single || survivorActive ? FPL_HOUSEHOLD_1 : FPL_HOUSEHOLD_2;
     const fpl = fplBase * inflFactor;
     const inConversionWindow =
       d.rothConversion.mode !== 'none' && year >= convStart && year <= convEnd && buckets.tradYou + buckets.tradSpouse > 0;

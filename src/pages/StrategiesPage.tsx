@@ -94,7 +94,7 @@ export function StrategiesPage({ inputs }: { inputs: PlanInputs }) {
             <thead>
               <tr>
                 <th>Strategy</th>
-                <th>Claim ages ({inputs.you.name}/{inputs.spouse.name})</th>
+                <th>{inputs.single ? 'Claim age' : `Claim ages (${inputs.you.name}/${inputs.spouse.name})`}</th>
                 <th>Lifetime SS received</th>
                 <th>Final balance</th>
                 {claiming.some((c) => c.lifetimeTax !== undefined) && <th>Lifetime taxes</th>}
@@ -108,9 +108,7 @@ export function StrategiesPage({ inputs }: { inputs: PlanInputs }) {
                     {c.label}
                     {c.label === bestClaim.label && ' ⭐'}
                   </td>
-                  <td>
-                    {c.youAge}/{c.spouseAge}
-                  </td>
+                  <td>{inputs.single ? c.youAge : `${c.youAge}/${c.spouseAge}`}</td>
                   <td>{moneyCompact(c.lifetimeSS)}</td>
                   <td>{moneyCompact(c.finalBalance)}</td>
                   {claiming.some((x) => x.lifetimeTax !== undefined) && (

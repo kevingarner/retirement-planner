@@ -4,6 +4,7 @@ export function defaultInputs(): PlanInputs {
   const year = new Date().getFullYear();
   return {
     startYear: year,
+    single: false,
     taxMode: 'simple',
     events: [],
     withdrawalStrategy: 'fixed',
