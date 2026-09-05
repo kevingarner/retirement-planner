@@ -65,36 +65,38 @@ export function BudgetPage({ budget, goGoSpending, onChange, onPushToPlan }: Pro
                 {grandAnnual > 0 && ` · ${pct((catMonthly * 12) / grandAnnual, 0)}`}
               </span>
             </div>
-            <table className="budget-table">
-              <tbody>
-                {cat.items.map((item) => (
-                  <tr key={item.id}>
-                    <td className="budget-name">
-                      <input
-                        className="ghost-input"
-                        value={item.name}
-                        onChange={(e) => setItem(cat, { ...item, name: e.target.value })}
-                      />
-                    </td>
-                    <td className="budget-monthly">
-                      <MoneyInput value={item.monthly} onChange={(v) => setItem(cat, { ...item, monthly: v })} />
-                      <span className="per">/mo</span>
-                    </td>
-                    <td className="budget-annual">{money(item.monthly * 12)}/yr</td>
-                    <td className="budget-note">{item.note}</td>
-                    <td>
-                      <button
-                        className="link-btn danger"
-                        title="Remove item"
-                        onClick={() => setCategory({ ...cat, items: cat.items.filter((i) => i.id !== item.id) })}
-                      >
-                        ×
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="table-scroll">
+              <table className="budget-table">
+                <tbody>
+                  {cat.items.map((item) => (
+                    <tr key={item.id}>
+                      <td className="budget-name">
+                        <input
+                          className="ghost-input"
+                          value={item.name}
+                          onChange={(e) => setItem(cat, { ...item, name: e.target.value })}
+                        />
+                      </td>
+                      <td className="budget-monthly">
+                        <MoneyInput value={item.monthly} onChange={(v) => setItem(cat, { ...item, monthly: v })} />
+                        <span className="per">/mo</span>
+                      </td>
+                      <td className="budget-annual">{money(item.monthly * 12)}/yr</td>
+                      <td className="budget-note">{item.note}</td>
+                      <td>
+                        <button
+                          className="link-btn danger"
+                          title="Remove item"
+                          onClick={() => setCategory({ ...cat, items: cat.items.filter((i) => i.id !== item.id) })}
+                        >
+                          ×
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <button className="link-btn" onClick={() => setCategory({ ...cat, items: [...cat.items, newItem()] })}>
               + Add item
             </button>

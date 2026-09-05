@@ -515,6 +515,65 @@ select.num.select {
   }
 }
 
+/* ---- Phone layout ----
+   Below this, the 8-tab nav and the header actions no longer fit next to
+   the title on one line without either overflowing the viewport or wrapping
+   into a messy multi-row jumble — give the tab strip its own full-width,
+   horizontally-scrollable row instead (a standard mobile nav pattern), and
+   let the action buttons wrap onto their own row underneath. */
+@media (max-width: 640px) {
+  .app-header {
+    padding: 8px 12px;
+  }
+  .tabs {
+    order: 3;
+    width: 100%;
+    flex: none;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab {
+    white-space: nowrap;
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  .header-actions {
+    order: 2;
+    margin-left: auto;
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+}
+
+/* Narrowest phones: the two-person side-by-side inputs (couple mode) no
+   longer fit next to their label on one line — stack the label above the
+   inputs, and stack "you"/spouse inputs in a pair vertically too, rather
+   than letting them get squeezed illegibly narrow or force the sidebar to
+   scroll horizontally. */
+@media (max-width: 480px) {
+  .field {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+  .field-label {
+    flex: none;
+  }
+  .pair {
+    align-self: flex-end;
+  }
+  .pair:has(> :nth-child(2)) {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  .scenario-save {
+    flex-wrap: wrap;
+  }
+  .scenario-save input.num.name {
+    width: 100%;
+  }
+}
+
 /* ---- Backup nudge ---- */
 .backup-note {
   font-size: 11px;
