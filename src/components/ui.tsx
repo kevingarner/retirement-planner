@@ -53,18 +53,23 @@ function useDraft(value: string, commit: (raw: string) => void) {
   };
 }
 
-export function MoneyInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+// All fields these back (dollar amounts, ages, calendar years) are naturally
+// non-negative, and startYear/endYear=0 means "auto" — so a floor of 0
+// covers every current use. Number.isFinite (not just !isNaN) also rejects
+// "Infinity"/"-Infinity", which parseFloat/parseInt otherwise happily accept
+// and would silently poison the projection math downstream.
+export function MoneyInput({ value, onChange, min = 0 }: { value: number; onChange: (v: number) => void; min?: number }) {
   const props = useDraft(value.toLocaleString('en-US'), (raw) => {
     const n = parseFloat(raw.replace(/[$,\s]/g, ''));
-    if (!Number.isNaN(n)) onChange(n);
+    if (Number.isFinite(n)) onChange(Math.max(min, n));
   });
   return <input className="num" inputMode="decimal" {...props} />;
 }
 
-export function IntInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+export function IntInput({ value, onChange, min = 0 }: { value: number; onChange: (v: number) => void; min?: number }) {
   const props = useDraft(String(value), (raw) => {
     const n = parseInt(raw, 10);
-    if (!Number.isNaN(n)) onChange(n);
+    if (Number.isFinite(n)) onChange(Math.max(min, n));
   });
   return <input className="num narrow" inputMode="numeric" {...props} />;
 }
@@ -73,7 +78,7 @@ export function IntInput({ value, onChange }: { value: number; onChange: (v: num
 export function PercentInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const props = useDraft(String(Math.round(value * 10000) / 100), (raw) => {
     const n = parseFloat(raw.replace(/%/g, ''));
-    if (!Number.isNaN(n)) onChange(n / 100);
+    if (Number.isFinite(n)) onChange(n / 100);
   });
   return (
     <span className="pct-wrap">

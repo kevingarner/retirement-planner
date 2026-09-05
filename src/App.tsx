@@ -1,7 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PlanInputs } from './model/types';
 import type { Budget } from './model/budget';
-import { loadState, saveState, exportState, importState, lastExportAt, type Scenario, type AppState } from './state/storage';
+import {
+  loadState,
+  saveState,
+  exportState,
+  importState,
+  lastExportAt,
+  STORAGE_KEY,
+  type Scenario,
+  type AppState,
+} from './state/storage';
 import { ReportOverlay } from './components/Report';
 import { useTheme } from './theme';
 import { InputsPanel } from './components/InputsPanel';
@@ -32,6 +41,7 @@ export default function App() {
   const [page, setPage] = useState<Page>('dashboard');
   const [showReport, setShowReport] = useState(false);
   const [lastExport, setLastExport] = useState<string | null>(() => lastExportAt());
+  const [otherTabUpdate, setOtherTabUpdate] = useState(false);
   const theme = useTheme();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -48,6 +58,18 @@ export default function App() {
   useEffect(() => {
     document.body.dataset.theme = theme.mode;
   }, [theme]);
+
+  // The browser only fires 'storage' in OTHER same-origin tabs/windows, never
+  // the one that made the write — so this only fires when a second tab
+  // (autosave or an import there) has changed the data underneath this one,
+  // which would otherwise be silently overwritten by this tab's next autosave.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY) setOtherTabUpdate(true);
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   const setInputs = (inputs: PlanInputs) => setState((s) => ({ ...s, inputs }));
   const setBudget = (budget: Budget) => setState((s) => ({ ...s, budget }));
@@ -90,6 +112,17 @@ export default function App() {
           <span className={`backup-note ${backupStale ? 'warn' : ''}`} title="JSON backups via the Export button — app data lives only in this browser">
             {backupLabel}
           </span>
+          {otherTabUpdate && (
+            <span
+              className="backup-note warn"
+              title="This app is open in another tab or window, and its data changed there. Reloading loads that version — export first if you want to keep unsaved changes made here."
+            >
+              changed in another tab —{' '}
+              <button className="link-btn" onClick={() => window.location.reload()}>
+                reload
+              </button>
+            </span>
+          )}
           <button
             className="btn subtle"
             onClick={() => {
