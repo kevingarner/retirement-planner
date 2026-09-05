@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PlanInputs } from './model/types';
 import type { Budget } from './model/budget';
+import { defaultInputs } from './model/defaults';
+import { defaultBudget } from './model/budget';
 import {
   loadState,
   saveState,
@@ -94,6 +96,15 @@ export default function App() {
     setPage('dashboard');
   };
 
+  const resetToDefaults = () => {
+    const confirmed = window.confirm(
+      'Reset your plan and budget to the defaults? Saved scenarios are kept, but this cannot be undone otherwise — export a backup first if you want to keep your current numbers.',
+    );
+    if (!confirmed) return;
+    setState((s) => ({ ...s, inputs: defaultInputs(), budget: defaultBudget() }));
+    setPage('dashboard');
+  };
+
   return (
     <div className="app">
       <header className="app-header">
@@ -144,6 +155,9 @@ export default function App() {
           >
             Help
           </a>
+          <button className="btn danger" onClick={resetToDefaults} title="Clears your plan and budget back to the defaults — saved scenarios are kept">
+            Reset
+          </button>
           <input
             ref={fileRef}
             type="file"

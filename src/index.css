@@ -361,6 +361,10 @@ select.num.select {
   border-color: var(--grid);
   color: var(--ink2);
 }
+.btn.danger {
+  border-color: var(--bad);
+  color: var(--bad);
+}
 .link-btn {
   border: none;
   background: none;
