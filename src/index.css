@@ -412,6 +412,17 @@ select.num.select {
 .year-table tr.shortfall td {
   color: var(--bad);
 }
+.guardrail-badge {
+  display: inline-block;
+  margin-left: 5px;
+  font-size: 10px;
+}
+.guardrail-badge.cut {
+  color: var(--bad);
+}
+.guardrail-badge.raise {
+  color: var(--good);
+}
 .swatch {
   display: inline-block;
   width: 10px;

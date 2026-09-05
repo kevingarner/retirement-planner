@@ -276,6 +276,7 @@ export function runDetailedProjection(rawInputs: PlanInputs, returnOverrides?: n
     };
 
     let sol = solve(spendMult);
+    let guardrailAction: 'cut' | 'raise' | null = null;
     if (inputs.withdrawalStrategy === 'guardrails' && phase === 'Retirement' && beginBalance > 0) {
       const grossOut = Math.max(sol.cashNeed, 0);
       const wr = grossOut / beginBalance;
@@ -284,9 +285,11 @@ export function runDetailedProjection(rawInputs: PlanInputs, returnOverrides?: n
       } else if (wr > initialWR * (1 + inputs.guardrails.band)) {
         spendMult *= 1 - inputs.guardrails.adjustment;
         sol = solve(spendMult);
+        guardrailAction = 'cut';
       } else if (wr < initialWR * (1 - inputs.guardrails.band)) {
         spendMult *= 1 + inputs.guardrails.adjustment;
         sol = solve(spendMult);
+        guardrailAction = 'raise';
       }
     }
     const { spend: spending, conversion, tradExtra, taxableWithdraw, rothWithdraw, taxRes, subsidy, irmaa, shortfall } = sol;
@@ -377,6 +380,7 @@ export function runDetailedProjection(rawInputs: PlanInputs, returnOverrides?: n
       spendingPhase,
       cashReserve,
       endBalanceReal: endBalance / inflFactor,
+      guardrailAction,
       detail,
     };
     rows.push(row);

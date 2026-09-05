@@ -3,8 +3,15 @@ import { money } from '../format';
 
 export function YearTable({ result }: { result: ProjectionResult }) {
   const detailed = result.rows.some((r) => r.detail);
+  const hasGuardrails = result.rows.some((r) => r.guardrailAction);
   return (
     <div className="table-scroll">
+      {hasGuardrails && (
+        <p className="card-note">
+          <span className="guardrail-badge cut">▼</span> guardrail cut spending that year ·{' '}
+          <span className="guardrail-badge raise">▲</span> guardrail raised it back
+        </p>
+      )}
       <table className="year-table">
         <thead>
           <tr>
@@ -42,7 +49,19 @@ export function YearTable({ result }: { result: ProjectionResult }) {
               <td>{r.phase === 'Accumulation' ? 'Working' : r.spendingPhase}</td>
               <td>{money(r.yourContribution + r.spouseContribution)}</td>
               <td>{money(r.totalSS)}</td>
-              <td>{money(r.spending)}</td>
+              <td>
+                {money(r.spending)}
+                {r.guardrailAction === 'cut' && (
+                  <span className="guardrail-badge cut" title="Guardrail cut spending this year">
+                    ▼
+                  </span>
+                )}
+                {r.guardrailAction === 'raise' && (
+                  <span className="guardrail-badge raise" title="Guardrail raised spending this year">
+                    ▲
+                  </span>
+                )}
+              </td>
               <td>{money(r.medicare + r.preMedicareInsurance)}</td>
               <td>{money(r.ltcCost)}</td>
               {detailed && (

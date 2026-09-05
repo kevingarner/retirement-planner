@@ -226,6 +226,7 @@ export function runProjection(rawInputs: PlanInputs, returnOverrides?: number[])
     };
 
     let flows = computeDraw(spendMult);
+    let guardrailAction: 'cut' | 'raise' | null = null;
     if (inputs.withdrawalStrategy === 'guardrails' && phase === 'Retirement' && beginBalance > 0) {
       const wr = flows.draw / beginBalance;
       if (initialWR === null) {
@@ -233,9 +234,11 @@ export function runProjection(rawInputs: PlanInputs, returnOverrides?: number[])
       } else if (wr > initialWR * (1 + inputs.guardrails.band)) {
         spendMult *= 1 - inputs.guardrails.adjustment;
         flows = computeDraw(spendMult);
+        guardrailAction = 'cut';
       } else if (wr < initialWR * (1 - inputs.guardrails.band)) {
         spendMult *= 1 + inputs.guardrails.adjustment;
         flows = computeDraw(spendMult);
+        guardrailAction = 'raise';
       }
     }
     const portfolioDraw = flows.draw;
@@ -293,6 +296,7 @@ export function runProjection(rawInputs: PlanInputs, returnOverrides?: number[])
       spendingPhase,
       cashReserve,
       endBalanceReal: endBalance / inflFactor,
+      guardrailAction,
     };
     rows.push(row);
     prev = row;

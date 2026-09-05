@@ -179,6 +179,7 @@ export interface YearRow {
   spendingPhase: SpendingPhase;
   cashReserve: number;
   endBalanceReal: number; // today's $
+  guardrailAction: 'cut' | 'raise' | null; // guardrails strategy only — did this year's withdrawal-rate check trigger a spending change
   detail?: YearDetail;
 }
 
