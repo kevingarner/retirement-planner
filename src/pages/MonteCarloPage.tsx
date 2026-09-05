@@ -25,6 +25,14 @@ export function MonteCarloPage({ inputs, theme }: { inputs: PlanInputs; theme: T
           Instead of one fixed return, each simulation draws a random return every year (normal distribution around
           your plan's rates). The deterministic stress-test toggle is ignored here — randomness replaces it.
         </p>
+        <p className="card-note">
+          Each year's draw is independent, with no memory of the year before — unlike Backtest's real sequences,
+          which recover from crashes the way markets actually have. That lets this explore far more possible paths
+          than the ~90 years on record, including unlucky streaks history never produced, which is usually why this
+          success rate runs lower. It also drags the median balance down over time even in ordinary runs: randomly
+          bouncing returns around an average compounds to less than that average ("volatility drag") — the higher
+          the volatility inputs above, the bigger that effect.
+        </p>
         <div className="mc-controls">
           <Field label="Simulations">
             <IntInput value={params.simulations} onChange={(v) => set({ simulations: Math.max(100, Math.min(v, 5000)) })} />

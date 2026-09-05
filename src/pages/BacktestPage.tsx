@@ -22,6 +22,13 @@ export function BacktestPage({ inputs, theme }: { inputs: PlanInputs; theme: The
           on record?" and complements Monte Carlo's randomized draws. The plan's down-market stress test is replaced
           by history here.
         </p>
+        <p className="card-note">
+          A "starting year" only counts if there's a full plan-length stretch of real data after it, so recent crashes
+          like the dot-com bust and 2008 can't appear as their own row below — but they're baked into every window
+          that lived through them. And because each window is a real sequence — crashes followed by the recoveries
+          that actually happened — results here are usually more forgiving than Monte Carlo's for the same plan,
+          which has no such recoveries built in.
+        </p>
         <div className="mc-controls">
           <Field label="Stock allocation" hint="Remainder in 10-year Treasuries; S&P 500 total returns">
             <PercentInput value={stockPct} onChange={(v) => setStockPct(Math.min(Math.max(v, 0), 1))} />
