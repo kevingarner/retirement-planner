@@ -67,6 +67,11 @@ export function BacktestPage({ inputs, theme }: { inputs: PlanInputs; theme: The
 
           <div className="card">
             <h3>Toughest starting years</h3>
+            <p className="card-note">
+              The worst {Math.min(5, bt.windows.length)} of {bt.windows.length} cohorts tested (
+              {bt.windows[0].startYear}–{bt.windows[bt.windows.length - 1].startYear}), ranked by how long the plan
+              lasted, then by final balance — most cohorts don't get a row here.
+            </p>
             <div className="table-scroll">
               <table className="year-table">
                 <thead>
