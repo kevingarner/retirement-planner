@@ -16,12 +16,24 @@ export const defaultMonteCarloParams: MonteCarloParams = {
   seed: 42,
 };
 
+// Only populated when withdrawalStrategy is 'guardrails' — how often, and how
+// severely, the guardrail rule actually bit across the randomized runs (as
+// opposed to the single deterministic path shown elsewhere on the Strategies
+// page).
+export interface MonteCarloGuardrailStats {
+  pctSimsWithCut: number; // fraction of sims with at least one cut year
+  pctSimsWithRaise: number; // fraction of sims with at least one raise year
+  medianWorstYearReal: number; // median, across sims, of that sim's lowest real (today's $) retirement spending
+  p10WorstYearReal: number; // 10th percentile of the same distribution — the unlucky tail
+}
+
 export interface MonteCarloResult {
   successRate: number; // fraction of sims where the portfolio never hits 0
   years: number[];
   percentiles: { p10: number[]; p25: number[]; p50: number[]; p75: number[]; p90: number[] };
   medianFinalBalance: number;
   runOutYears: (number | null)[];
+  guardrailStats?: MonteCarloGuardrailStats;
 }
 
 // Deterministic PRNG so results are reproducible run-to-run
@@ -73,6 +85,11 @@ export function runMonteCarlo(inputs: PlanInputs, params: MonteCarloParams): Mon
   let successes = 0;
   const finals: number[] = [];
 
+  const trackGuardrails = inputs.withdrawalStrategy === 'guardrails';
+  let simsWithCut = 0;
+  let simsWithRaise = 0;
+  const worstYearRealPerSim: number[] = [];
+
   const gaussians: number[] = [];
   const nextGaussian = () => {
     if (gaussians.length === 0) gaussians.push(...gaussianPair(rand));
@@ -91,6 +108,22 @@ export function runMonteCarlo(inputs: PlanInputs, params: MonteCarloParams): Mon
     runOutYears.push(result.runOutYear);
     finals.push(result.finalBalance);
     for (let t = 0; t < numYears; t++) balancesByYear[t].push(result.rows[t].endBalance);
+
+    if (trackGuardrails) {
+      let hadCut = false;
+      let hadRaise = false;
+      let worstReal = Infinity;
+      for (const row of result.rows) {
+        if (row.phase !== 'Retirement') continue;
+        if (row.guardrailAction === 'cut') hadCut = true;
+        if (row.guardrailAction === 'raise') hadRaise = true;
+        const real = row.spending / Math.pow(1 + inputs.inflation, row.year - inputs.startYear);
+        if (real < worstReal) worstReal = real;
+      }
+      if (hadCut) simsWithCut++;
+      if (hadRaise) simsWithRaise++;
+      worstYearRealPerSim.push(worstReal === Infinity ? 0 : worstReal);
+    }
   }
 
   const years = Array.from({ length: numYears }, (_, t) => inputs.startYear + t);
@@ -98,11 +131,24 @@ export function runMonteCarlo(inputs: PlanInputs, params: MonteCarloParams): Mon
     balancesByYear.map((arr) => percentile([...arr].sort((a, b) => a - b), p));
 
   finals.sort((a, b) => a - b);
+
+  let guardrailStats: MonteCarloGuardrailStats | undefined;
+  if (trackGuardrails) {
+    const sortedWorst = [...worstYearRealPerSim].sort((a, b) => a - b);
+    guardrailStats = {
+      pctSimsWithCut: simsWithCut / params.simulations,
+      pctSimsWithRaise: simsWithRaise / params.simulations,
+      medianWorstYearReal: percentile(sortedWorst, 0.5),
+      p10WorstYearReal: percentile(sortedWorst, 0.1),
+    };
+  }
+
   return {
     successRate: successes / params.simulations,
     years,
     percentiles: { p10: pct(0.1), p25: pct(0.25), p50: pct(0.5), p75: pct(0.75), p90: pct(0.9) },
     medianFinalBalance: percentile(finals, 0.5),
     runOutYears,
+    guardrailStats,
   };
 }

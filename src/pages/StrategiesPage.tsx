@@ -25,8 +25,13 @@ export function StrategiesPage({ inputs }: { inputs: PlanInputs }) {
     const fixedMc = runMonteCarlo({ ...inputs, withdrawalStrategy: 'fixed' }, mcParams);
     const guardrailsMc = runMonteCarlo({ ...inputs, withdrawalStrategy: 'guardrails' }, mcParams);
     return [
-      { label: 'Fixed (inflation-adjusted)', ...fixed, mcSuccess: fixedMc.successRate },
-      { label: `Guardrails (±${Math.round(inputs.guardrails.band * 100)}% band, ${Math.round(inputs.guardrails.adjustment * 100)}% steps)`, ...guardrails, mcSuccess: guardrailsMc.successRate },
+      { label: 'Fixed (inflation-adjusted)', ...fixed, mcSuccess: fixedMc.successRate, mcGuardrails: fixedMc.guardrailStats },
+      {
+        label: `Guardrails (±${Math.round(inputs.guardrails.band * 100)}% band, ${Math.round(inputs.guardrails.adjustment * 100)}% steps)`,
+        ...guardrails,
+        mcSuccess: guardrailsMc.successRate,
+        mcGuardrails: guardrailsMc.guardrailStats,
+      },
     ];
   }, [inputs]);
 
@@ -43,6 +48,11 @@ export function StrategiesPage({ inputs }: { inputs: PlanInputs }) {
           {Math.round(inputs.guardrails.band * 100)}% above its starting level, and raises it after strong markets —
           trading spending stability for survival odds. Monte Carlo success uses 500 simulations.
         </p>
+        <p className="card-note">
+          The last two columns look across all 500 randomized runs, not just the one path shown elsewhere on this
+          row — "median worst year" is the typical worst single year across those runs; "10th %ile" is how bad the
+          unlucky 1-in-10 case gets. Guardrails-only; fixed spending never adjusts, so there's nothing to show.
+        </p>
         <div className="table-scroll">
           <table className="year-table">
             <thead>
@@ -54,6 +64,8 @@ export function StrategiesPage({ inputs }: { inputs: PlanInputs }) {
                 <th>Lifetime spending (today's $)</th>
                 <th>Lowest year (today's $)</th>
                 <th>Highest year (today's $)</th>
+                <th>Cuts in sims (median worst year)</th>
+                <th>10th %ile worst year (sims)</th>
               </tr>
             </thead>
             <tbody>
@@ -69,6 +81,12 @@ export function StrategiesPage({ inputs }: { inputs: PlanInputs }) {
                   <td>{moneyCompact(w.lifetimeRealSpending)}</td>
                   <td>{money(w.minRealSpending)}</td>
                   <td>{money(w.maxRealSpending)}</td>
+                  <td>
+                    {w.mcGuardrails
+                      ? `${pct(w.mcGuardrails.pctSimsWithCut, 0)} (${money(w.mcGuardrails.medianWorstYearReal)})`
+                      : '—'}
+                  </td>
+                  <td>{w.mcGuardrails ? money(w.mcGuardrails.p10WorstYearReal) : '—'}</td>
                 </tr>
               ))}
             </tbody>
