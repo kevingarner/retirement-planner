@@ -1,8 +1,46 @@
 import type { PlanInputs } from './types';
 import { runPlan } from './detailed';
+import { runMonteCarlo, type MonteCarloParams } from './montecarlo';
 
 function survives(inputs: PlanInputs): boolean {
   return !runPlan(inputs).runsOut;
+}
+
+// A full binary search at the Monte Carlo tab's own simulation count (which
+// can go up to 5000) would take many seconds in detailed tax mode — this
+// fixed, smaller count keeps the solver responsive. It reuses the tab's
+// volatility/seed so the risk assumptions still match, just not the sample
+// size; the UI discloses this rather than pretending it's the same number.
+const SOLVER_SIMULATIONS = 200;
+const SOLVER_ITERATIONS = 20;
+
+function mcSuccessAt(inputs: PlanInputs, mcParams: MonteCarloParams, goGoSpending: number): number {
+  const params: MonteCarloParams = { ...mcParams, simulations: SOLVER_SIMULATIONS };
+  return runMonteCarlo({ ...inputs, goGoSpending }, params).successRate;
+}
+
+// Largest Go-Go spending (today's $) for which Monte Carlo success rate stays
+// at or above `targetSuccess`. Same idea as maxSustainableSpending but against
+// randomized returns instead of one fixed-return path. Returns null if it
+// fails even at zero spending.
+export function maxSustainableSpendingMonteCarlo(
+  inputs: PlanInputs,
+  mcParams: MonteCarloParams,
+  targetSuccess: number,
+): number | null {
+  if (mcSuccessAt(inputs, mcParams, 0) < targetSuccess) return null;
+  let lo = 0;
+  let hi = Math.max(inputs.goGoSpending * 2, 100000);
+  while (mcSuccessAt(inputs, mcParams, hi) >= targetSuccess) {
+    hi *= 2;
+    if (hi > 1e9) return hi;
+  }
+  for (let i = 0; i < SOLVER_ITERATIONS; i++) {
+    const mid = (lo + hi) / 2;
+    if (mcSuccessAt(inputs, mcParams, mid) >= targetSuccess) lo = mid;
+    else hi = mid;
+  }
+  return lo;
 }
 
 // Largest Go-Go spending (today's $) for which the portfolio never runs out.

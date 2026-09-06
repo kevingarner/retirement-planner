@@ -199,7 +199,7 @@ export default function App() {
             />
           )}
           {page === 'backtest' && <BacktestPage inputs={state.inputs} theme={theme} />}
-          {page === 'sensitivity' && <SensitivityPage inputs={state.inputs} />}
+          {page === 'sensitivity' && <SensitivityPage inputs={state.inputs} mcParams={mcParams} />}
           {page === 'strategies' && <StrategiesPage inputs={state.inputs} mcParams={mcParams} />}
           {page === 'roth' && (
             <RothExplorerPage
