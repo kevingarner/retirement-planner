@@ -1,10 +1,12 @@
 import { useMemo } from 'react';
 import type { PlanInputs } from '../model/types';
 import { runPlan } from '../model/detailed';
-import { runMonteCarlo, defaultMonteCarloParams } from '../model/montecarlo';
+import { runMonteCarlo, type MonteCarloParams } from '../model/montecarlo';
 import { runBacktest } from '../model/backtest';
+import { compareWithdrawalStrategies } from '../model/withdrawalStrategies';
+import { compareRothStrategies } from '../model/rothStrategies';
 import type { Theme } from '../theme';
-import { moneyCompact, pct } from '../format';
+import { money, moneyCompact, pct } from '../format';
 import { StatTile } from './ui';
 import { BalanceChart, CashflowChart } from './charts';
 import { YearTable } from './YearTable';
@@ -18,10 +20,27 @@ function SummaryItem({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function ReportOverlay({ inputs, theme, onClose }: { inputs: PlanInputs; theme: Theme; onClose: () => void }) {
+export function ReportOverlay({
+  inputs,
+  theme,
+  mcParams,
+  onClose,
+}: {
+  inputs: PlanInputs;
+  theme: Theme;
+  mcParams: MonteCarloParams;
+  onClose: () => void;
+}) {
   const result = useMemo(() => runPlan(inputs), [inputs]);
-  const mc = useMemo(() => runMonteCarlo(inputs, defaultMonteCarloParams), [inputs]);
+  const mc = useMemo(() => runMonteCarlo(inputs, mcParams), [inputs, mcParams]);
   const bt = useMemo(() => runBacktest(inputs, 0.7), [inputs]);
+  const withdrawal = useMemo(() => compareWithdrawalStrategies(inputs, mcParams), [inputs, mcParams]);
+  const roth = useMemo(() => compareRothStrategies(inputs), [inputs]);
+  const bestRoth = roth
+    ? (roth.filter((r) => !r.runsOut).length ? roth.filter((r) => !r.runsOut) : roth).reduce((a, b) =>
+        b.afterTaxEstateReal > a.afterTaxEstateReal ? b : a,
+      )
+    : null;
   const last = result.rows[result.rows.length - 1];
 
   return (
@@ -97,7 +116,7 @@ export function ReportOverlay({ inputs, theme, onClose }: { inputs: PlanInputs; 
             <StatTile
               label="Monte Carlo success"
               value={pct(mc.successRate, 1)}
-              detail="1,000 randomized-return simulations"
+              detail={`${mcParams.simulations.toLocaleString()} randomized-return simulations`}
               tone={mc.successRate >= 0.9 ? 'good' : mc.successRate < 0.75 ? 'bad' : undefined}
             />
             <StatTile
@@ -129,6 +148,74 @@ export function ReportOverlay({ inputs, theme, onClose }: { inputs: PlanInputs; 
           <h2>Retirement cash flow</h2>
           <CashflowChart result={result} theme={theme} />
         </section>
+
+        <section className="report-section">
+          <h2>Withdrawal strategy: fixed vs. guardrails</h2>
+          <div className="table-scroll">
+            <table className="year-table">
+              <thead>
+                <tr>
+                  <th>Strategy</th>
+                  <th>Outcome</th>
+                  <th>Monte Carlo success</th>
+                  <th>Lifetime spending (today's $)</th>
+                  <th>Lowest year (today's $)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {withdrawal.map((w) => (
+                  <tr key={w.label}>
+                    <td>
+                      {w.label}
+                      {inputs.withdrawalStrategy === (w.label.startsWith('Fixed') ? 'fixed' : 'guardrails') && ' (current)'}
+                    </td>
+                    <td>{w.result.runsOut ? `⚠ Runs out ${w.result.runOutYear}` : '✓ Survives'}</td>
+                    <td>{pct(w.mcSuccess, 1)}</td>
+                    <td>{moneyCompact(w.lifetimeRealSpending)}</td>
+                    <td>{money(w.minRealSpending)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {roth && bestRoth && (
+          <section className="report-section">
+            <h2>Roth conversion strategies</h2>
+            <p className="card-note">
+              Best for this plan: {bestRoth.label} — {moneyCompact(bestRoth.afterTaxEstateReal)} after-tax estate
+              (today's $)
+            </p>
+            <div className="table-scroll">
+              <table className="year-table">
+                <thead>
+                  <tr>
+                    <th>Strategy</th>
+                    <th>Total converted</th>
+                    <th>Lifetime taxes</th>
+                    <th>After-tax estate (today's $)</th>
+                    <th>Outcome</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {roth.map((r) => (
+                    <tr key={r.label}>
+                      <td>
+                        {r.label}
+                        {r.label === bestRoth.label && ' ⭐'}
+                      </td>
+                      <td>{moneyCompact(r.totalConverted)}</td>
+                      <td>{moneyCompact(r.lifetimeTax)}</td>
+                      <td>{moneyCompact(r.afterTaxEstateReal)}</td>
+                      <td>{r.runsOut ? `⚠ Runs out ${r.runOutYear}` : '✓ Survives'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
 
         <section className="report-section">
           <h2>Year by year</h2>

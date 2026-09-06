@@ -1,38 +1,12 @@
 import { useMemo } from 'react';
 import type { PlanInputs } from '../model/types';
-import { runPlan } from '../model/detailed';
-import { runMonteCarlo, type MonteCarloParams } from '../model/montecarlo';
+import type { MonteCarloParams } from '../model/montecarlo';
+import { compareWithdrawalStrategies } from '../model/withdrawalStrategies';
 import { compareClaimingStrategies } from '../model/claiming';
 import { money, moneyCompact, pct } from '../format';
 
-function spendingStats(inputs: PlanInputs) {
-  const r = runPlan(inputs);
-  const retRows = r.rows.filter((x) => x.phase === 'Retirement');
-  const realSpend = retRows.map((x) => x.spending / Math.pow(1 + inputs.inflation, x.year - inputs.startYear));
-  return {
-    result: r,
-    lifetimeRealSpending: realSpend.reduce((s, v) => s + v, 0),
-    minRealSpending: realSpend.length ? Math.min(...realSpend) : 0,
-    maxRealSpending: realSpend.length ? Math.max(...realSpend) : 0,
-  };
-}
-
 export function StrategiesPage({ inputs, mcParams }: { inputs: PlanInputs; mcParams: MonteCarloParams }) {
-  const withdrawal = useMemo(() => {
-    const fixed = spendingStats({ ...inputs, withdrawalStrategy: 'fixed' });
-    const guardrails = spendingStats({ ...inputs, withdrawalStrategy: 'guardrails' });
-    const fixedMc = runMonteCarlo({ ...inputs, withdrawalStrategy: 'fixed' }, mcParams);
-    const guardrailsMc = runMonteCarlo({ ...inputs, withdrawalStrategy: 'guardrails' }, mcParams);
-    return [
-      { label: 'Fixed (inflation-adjusted)', ...fixed, mcSuccess: fixedMc.successRate, mcGuardrails: fixedMc.guardrailStats },
-      {
-        label: `Guardrails (±${Math.round(inputs.guardrails.band * 100)}% band, ${Math.round(inputs.guardrails.adjustment * 100)}% steps)`,
-        ...guardrails,
-        mcSuccess: guardrailsMc.successRate,
-        mcGuardrails: guardrailsMc.guardrailStats,
-      },
-    ];
-  }, [inputs, mcParams]);
+  const withdrawal = useMemo(() => compareWithdrawalStrategies(inputs, mcParams), [inputs, mcParams]);
 
   const claiming = useMemo(() => compareClaimingStrategies(inputs), [inputs]);
   const bestClaim = claiming.reduce((a, b) => (b.finalBalance > a.finalBalance ? b : a));

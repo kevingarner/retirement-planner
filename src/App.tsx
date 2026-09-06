@@ -228,7 +228,9 @@ export default function App() {
         legal advice. Verify significant decisions with a qualified professional.
       </footer>
 
-      {showReport && <ReportOverlay inputs={state.inputs} theme={theme} onClose={() => setShowReport(false)} />}
+      {showReport && (
+        <ReportOverlay inputs={state.inputs} theme={theme} mcParams={mcParams} onClose={() => setShowReport(false)} />
+      )}
     </div>
   );
 }
