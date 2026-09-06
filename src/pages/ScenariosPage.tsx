@@ -1,21 +1,23 @@
 import { useMemo, useState } from 'react';
 import type { PlanInputs } from '../model/types';
 import { runPlan } from '../model/detailed';
+import { runMonteCarlo, type MonteCarloParams } from '../model/montecarlo';
 import type { Scenario } from '../state/storage';
 import type { Theme } from '../theme';
-import { moneyCompact } from '../format';
+import { moneyCompact, pct } from '../format';
 import { ScenarioOverlayChart, type OverlaySeries } from '../components/charts';
 
 interface Props {
   inputs: PlanInputs;
   scenarios: Scenario[];
   theme: Theme;
+  mcParams: MonteCarloParams;
   onSave: (name: string) => void;
   onDelete: (id: string) => void;
   onLoad: (scenario: Scenario) => void;
 }
 
-export function ScenariosPage({ inputs, scenarios, theme, onSave, onDelete, onLoad }: Props) {
+export function ScenariosPage({ inputs, scenarios, theme, mcParams, onSave, onDelete, onLoad }: Props) {
   const [name, setName] = useState('');
   const [realDollars, setRealDollars] = useState(false);
 
@@ -49,10 +51,11 @@ export function ScenariosPage({ inputs, scenarios, theme, onSave, onDelete, onLo
             final: r.finalBalance,
             runsOut: r.runsOut,
             runOutYear: r.runOutYear,
+            mcSuccess: runMonteCarlo(s.inputs, mcParams).successRate,
           };
         },
       ),
-    [inputs, scenarios],
+    [inputs, scenarios, mcParams],
   );
 
   return (
@@ -112,6 +115,9 @@ export function ScenariosPage({ inputs, scenarios, theme, onSave, onDelete, onLo
                   At retirement
                 </th>
                 <th title="Nominal balance in the plan's final year">Final balance</th>
+                <th title="Fraction of randomized Monte Carlo runs (see the Monte Carlo tab for simulations/volatility) where this scenario's portfolio never hits zero — a fuller risk picture than the single deterministic path in the other columns">
+                  Monte Carlo success
+                </th>
                 <th>Outcome</th>
                 <th></th>
               </tr>
@@ -126,6 +132,7 @@ export function ScenariosPage({ inputs, scenarios, theme, onSave, onDelete, onLo
                   <td>{s.retire}</td>
                   <td>{s.atRetirement !== null ? moneyCompact(s.atRetirement) : '—'}</td>
                   <td>{moneyCompact(s.final)}</td>
+                  <td>{pct(s.mcSuccess, 1)}</td>
                   <td>{s.runsOut ? `⚠ Runs out ${s.runOutYear}` : '✓ Survives'}</td>
                   <td>
                     {s.id !== null && (

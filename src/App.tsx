@@ -193,6 +193,7 @@ export default function App() {
               inputs={state.inputs}
               scenarios={state.scenarios}
               theme={theme}
+              mcParams={mcParams}
               onSave={saveScenario}
               onDelete={deleteScenario}
               onLoad={loadScenario}
