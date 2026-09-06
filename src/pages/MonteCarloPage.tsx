@@ -1,14 +1,20 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { PlanInputs } from '../model/types';
-import { runMonteCarlo, defaultMonteCarloParams, type MonteCarloParams } from '../model/montecarlo';
+import { runMonteCarlo, type MonteCarloParams } from '../model/montecarlo';
 import type { Theme } from '../theme';
 import { pct, moneyCompact } from '../format';
 import { StatTile, Field, IntInput, PercentInput } from '../components/ui';
 import { MonteCarloChart } from '../components/charts';
 
-export function MonteCarloPage({ inputs, theme }: { inputs: PlanInputs; theme: Theme }) {
-  const [params, setParams] = useState<MonteCarloParams>(defaultMonteCarloParams);
-  const set = (patch: Partial<MonteCarloParams>) => setParams({ ...params, ...patch });
+interface Props {
+  inputs: PlanInputs;
+  theme: Theme;
+  params: MonteCarloParams;
+  onParamsChange: (params: MonteCarloParams) => void;
+}
+
+export function MonteCarloPage({ inputs, theme, params, onParamsChange }: Props) {
+  const set = (patch: Partial<MonteCarloParams>) => onParamsChange({ ...params, ...patch });
 
   const mc = useMemo(() => runMonteCarlo(inputs, params), [inputs, params]);
 

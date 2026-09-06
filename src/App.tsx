@@ -3,6 +3,7 @@ import type { PlanInputs } from './model/types';
 import type { Budget } from './model/budget';
 import { defaultInputs } from './model/defaults';
 import { defaultBudget } from './model/budget';
+import { defaultMonteCarloParams, type MonteCarloParams } from './model/montecarlo';
 import {
   loadState,
   saveState,
@@ -43,6 +44,7 @@ export default function App() {
   const [page, setPage] = useState<Page>('dashboard');
   const [showReport, setShowReport] = useState(false);
   const [lastExport, setLastExport] = useState<string | null>(() => lastExportAt());
+  const [mcParams, setMcParams] = useState<MonteCarloParams>(defaultMonteCarloParams);
   const [otherTabUpdate, setOtherTabUpdate] = useState(false);
   const theme = useTheme();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -183,7 +185,9 @@ export default function App() {
         </aside>
         <main className="main">
           {page === 'dashboard' && <Dashboard inputs={state.inputs} theme={theme} />}
-          {page === 'montecarlo' && <MonteCarloPage inputs={state.inputs} theme={theme} />}
+          {page === 'montecarlo' && (
+            <MonteCarloPage inputs={state.inputs} theme={theme} params={mcParams} onParamsChange={setMcParams} />
+          )}
           {page === 'scenarios' && (
             <ScenariosPage
               inputs={state.inputs}
@@ -196,7 +200,7 @@ export default function App() {
           )}
           {page === 'backtest' && <BacktestPage inputs={state.inputs} theme={theme} />}
           {page === 'sensitivity' && <SensitivityPage inputs={state.inputs} />}
-          {page === 'strategies' && <StrategiesPage inputs={state.inputs} />}
+          {page === 'strategies' && <StrategiesPage inputs={state.inputs} mcParams={mcParams} />}
           {page === 'roth' && (
             <RothExplorerPage
               inputs={state.inputs}

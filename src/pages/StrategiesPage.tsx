@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { PlanInputs } from '../model/types';
 import { runPlan } from '../model/detailed';
-import { runMonteCarlo, defaultMonteCarloParams } from '../model/montecarlo';
+import { runMonteCarlo, type MonteCarloParams } from '../model/montecarlo';
 import { compareClaimingStrategies } from '../model/claiming';
 import { money, moneyCompact, pct } from '../format';
 
@@ -17,11 +17,10 @@ function spendingStats(inputs: PlanInputs) {
   };
 }
 
-export function StrategiesPage({ inputs }: { inputs: PlanInputs }) {
+export function StrategiesPage({ inputs, mcParams }: { inputs: PlanInputs; mcParams: MonteCarloParams }) {
   const withdrawal = useMemo(() => {
     const fixed = spendingStats({ ...inputs, withdrawalStrategy: 'fixed' });
     const guardrails = spendingStats({ ...inputs, withdrawalStrategy: 'guardrails' });
-    const mcParams = { ...defaultMonteCarloParams, simulations: 500 };
     const fixedMc = runMonteCarlo({ ...inputs, withdrawalStrategy: 'fixed' }, mcParams);
     const guardrailsMc = runMonteCarlo({ ...inputs, withdrawalStrategy: 'guardrails' }, mcParams);
     return [
@@ -33,7 +32,7 @@ export function StrategiesPage({ inputs }: { inputs: PlanInputs }) {
         mcGuardrails: guardrailsMc.guardrailStats,
       },
     ];
-  }, [inputs]);
+  }, [inputs, mcParams]);
 
   const claiming = useMemo(() => compareClaimingStrategies(inputs), [inputs]);
   const bestClaim = claiming.reduce((a, b) => (b.finalBalance > a.finalBalance ? b : a));
@@ -46,12 +45,15 @@ export function StrategiesPage({ inputs }: { inputs: PlanInputs }) {
           Fixed spends the plan amount every year regardless of markets. Guardrails cuts spending{' '}
           {Math.round(inputs.guardrails.adjustment * 100)}% when the withdrawal rate drifts{' '}
           {Math.round(inputs.guardrails.band * 100)}% above its starting level, and raises it after strong markets —
-          trading spending stability for survival odds. Monte Carlo success uses 500 simulations.
+          trading spending stability for survival odds. Monte Carlo success uses the Monte Carlo tab's settings (
+          {mcParams.simulations} simulations, {pct(mcParams.volatilityAccumulation, 0)}/
+          {pct(mcParams.volatilityRetirement, 0)} volatility) — change it there and it updates here too.
         </p>
         <p className="card-note">
-          The last two columns look across all 500 randomized runs, not just the one path shown elsewhere on this
-          row — "median worst year" is the typical worst single year across those runs; "10th %ile" is how bad the
-          unlucky 1-in-10 case gets. Guardrails-only; fixed spending never adjusts, so there's nothing to show.
+          The last two columns look across all {mcParams.simulations} randomized runs, not just the one path shown
+          elsewhere on this row — "median worst year" is the typical worst single year across those runs; "10th
+          %ile" is how bad the unlucky 1-in-10 case gets. Guardrails-only; fixed spending never adjusts, so there's
+          nothing to show.
         </p>
         <div className="table-scroll">
           <table className="year-table">
