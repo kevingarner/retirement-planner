@@ -24,18 +24,21 @@ export function SensitivityPage({ inputs }: { inputs: PlanInputs }) {
             value={maxSpend !== null ? money(Math.floor(maxSpend / 1000) * 1000) : 'None'}
             detail={`vs ${money(inputs.goGoSpending)} planned (today's $)`}
             tone={maxSpend !== null && maxSpend >= inputs.goGoSpending ? 'good' : 'bad'}
+            hint="Solved against your plan's single fixed-return projection — not Monte Carlo or Backtest — the most Go-Go spending that still survives to life expectancy at your assumed returns"
           />
           <StatTile
             label={`Earliest retirement age (${inputs.you.name})`}
             value={earliestAge !== null ? String(earliestAge) : 'Never'}
             detail={`vs ${inputs.you.retirementAge} planned · spouse shifts by the same years`}
             tone={earliestAge !== null && earliestAge <= inputs.you.retirementAge ? 'good' : 'bad'}
+            hint="Same deterministic solver as the others here — not Monte Carlo or Backtest"
           />
           <StatTile
             label="Required return in retirement"
             value={requiredReturn !== null ? pct(requiredReturn, 2) : '> 15%'}
             detail={`vs ${pct(inputs.returnRetirement, 1)} assumed`}
             tone={requiredReturn !== null && requiredReturn <= inputs.returnRetirement ? 'good' : 'bad'}
+            hint="The minimum retirement-phase return your plan needs, at today's spending and balances, to survive to life expectancy — solved deterministically, not from Monte Carlo or Backtest"
           />
         </div>
       </div>
@@ -48,8 +51,8 @@ export function SensitivityPage({ inputs }: { inputs: PlanInputs }) {
             <thead>
               <tr>
                 <th>Change</th>
-                <th>Final balance</th>
-                <th>In today's $</th>
+                <th title="Nominal dollars in the plan's final year">Final balance</th>
+                <th title="That same final balance, deflated to today's purchasing power">In today's $</th>
                 <th>Outcome</th>
               </tr>
             </thead>

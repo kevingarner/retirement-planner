@@ -29,38 +29,53 @@ export function Dashboard({ inputs, theme }: { inputs: PlanInputs; theme: Theme 
           label="At retirement"
           value={result.balanceAtRetirement !== null ? moneyCompact(result.balanceAtRetirement) : '—'}
           detail={`retirement starts ${result.retirementYearYou}`}
+          hint="Portfolio balance the moment the earlier-retiring spouse stops contributing and the plan switches to withdrawals"
         />
         <StatTile
           label="Final balance"
           value={moneyCompact(result.finalBalance)}
           detail={`${result.endYear} · ${moneyCompact(result.rows[result.rows.length - 1].endBalanceReal)} today's $`}
           tone={result.finalBalance > 0 ? 'good' : 'bad'}
+          hint="The main value is nominal dollars in the plan's last year; the detail line also shows it deflated to today's purchasing power"
         />
-        <StatTile label="Peak balance year" value={String(result.peakBalanceYear)} />
+        <StatTile
+          label="Peak balance year"
+          value={String(result.peakBalanceYear)}
+          hint="The single calendar year the portfolio's nominal balance was at its highest, before any later decline"
+        />
         <StatTile
           label="Lifetime Social Security"
           value={moneyCompact(result.totalLifetimeSS)}
           detail={inputs.includeSS ? 'included in plan' : 'excluded from plan'}
+          hint="Nominal sum of every SS check received over the whole plan — not discounted to today's dollars"
         />
       </div>
 
       {inputs.taxMode === 'detailed' && result.lifetimeTax !== undefined && (
         <div className="stat-row">
-          <StatTile label="Lifetime taxes" value={moneyCompact(result.lifetimeTax)} detail="federal + state, nominal" />
+          <StatTile
+            label="Lifetime taxes"
+            value={moneyCompact(result.lifetimeTax)}
+            detail="federal + state, nominal"
+            hint="Nominal sum of federal + state tax paid across the whole plan"
+          />
           <StatTile
             label="Lifetime ACA subsidies"
             value={moneyCompact(result.lifetimeAcaSubsidy ?? 0)}
             detail={inputs.detailed.aca.enabled ? `${inputs.detailed.aca.rules === 'cliff' ? '400% FPL cliff' : 'enhanced'} rules` : 'ACA modeling off'}
+            hint="Nominal sum of ACA premium subsidies received before Medicare age, across the whole plan"
           />
           <StatTile
             label="After-tax estate"
             value={moneyCompact(result.afterTaxEstate ?? 0)}
             detail={`traditional $ taxed at ${Math.round(inputs.detailed.heirTaxRate * 100)}% to heirs`}
+            hint="Final taxable + Roth balances, plus traditional balances after your assumed heir tax rate — nominal dollars here; the Roth Explorer page shows this same metric deflated to today's dollars instead"
           />
           <StatTile
             label="Roth conversions"
             value={moneyCompact(result.rows.reduce((s, r) => s + (r.detail?.rothConversion ?? 0), 0))}
             detail={inputs.detailed.rothConversion.mode === 'none' ? 'no strategy set' : 'total converted'}
+            hint="Nominal sum of every year's Roth conversion amount across the whole plan"
           />
         </div>
       )}

@@ -51,12 +51,19 @@ export function BacktestPage({ inputs, theme }: { inputs: PlanInputs; theme: The
               value={pct(bt.successRate, 1)}
               detail={`${bt.windows.filter((w) => !w.runsOut).length} of ${bt.windows.length} starting years survived`}
               tone={bt.successRate >= 0.9 ? 'good' : bt.successRate < 0.75 ? 'bad' : undefined}
+              hint="Fraction of tested historical cohorts where the portfolio never hit zero — each cohort replays one real historical sequence of returns, not a random draw"
             />
-            <StatTile label="Median final balance" value={moneyCompact(bt.medianFinalBalanceReal)} detail="today's dollars" />
+            <StatTile
+              label="Median final balance"
+              value={moneyCompact(bt.medianFinalBalanceReal)}
+              detail="today's dollars"
+              hint="Median across all tested cohorts, in inflation-adjusted (today's) dollars"
+            />
             <StatTile
               label="Windows tested"
               value={String(bt.windows.length)}
               detail={`${HISTORY[0].year}–${HISTORY[bt.windows.length - 1].year} cohorts, ${bt.years.length}-year plans`}
+              hint="Only a starting year with a full plan-length stretch of real data after it counts — that's why recent years like 2000 or 2008 may not appear as their own cohort"
             />
           </div>
 
@@ -78,8 +85,12 @@ export function BacktestPage({ inputs, theme }: { inputs: PlanInputs; theme: The
                   <tr>
                     <th>If markets replay…</th>
                     <th>Outcome</th>
-                    <th>Years lasted</th>
-                    <th>Final balance (today's $)</th>
+                    <th title="Out of the plan's total length in years (shown after 'of') — matching that number means it survived the full projection">
+                      Years lasted
+                    </th>
+                    <th title="Inflation-adjusted balance at the end of this cohort's replay — comparable in real purchasing power across different starting years">
+                      Final balance (today's $)
+                    </th>
                   </tr>
                 </thead>
                 <tbody>

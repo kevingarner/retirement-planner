@@ -127,14 +127,16 @@ export function StatTile({
   value,
   detail,
   tone,
+  hint,
 }: {
   label: string;
   value: string;
   detail?: string;
   tone?: 'good' | 'bad';
+  hint?: string;
 }) {
   return (
-    <div className="stat-tile">
+    <div className="stat-tile" title={hint}>
       <div className="stat-label">{label}</div>
       <div className={`stat-value ${tone ?? ''}`}>{value}</div>
       {detail && <div className="stat-detail">{detail}</div>}

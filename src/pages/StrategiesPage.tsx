@@ -61,13 +61,25 @@ export function StrategiesPage({ inputs, mcParams }: { inputs: PlanInputs; mcPar
               <tr>
                 <th>Strategy</th>
                 <th>Outcome</th>
-                <th>Final balance</th>
-                <th>Monte Carlo success</th>
-                <th>Lifetime spending (today's $)</th>
-                <th>Lowest year (today's $)</th>
-                <th>Highest year (today's $)</th>
-                <th>Cuts in sims (median worst year)</th>
-                <th>10th %ile worst year (sims)</th>
+                <th title="Nominal dollars in the plan's final year — not inflation-adjusted, unlike the columns marked (today's $)">
+                  Final balance
+                </th>
+                <th title="Fraction of randomized runs (see the Monte Carlo tab for simulations/volatility) where this strategy's portfolio never hits zero">
+                  Monte Carlo success
+                </th>
+                <th title="Sum of every retirement year's spending, deflated to today's dollars — a running total across the plan, not a present value">
+                  Lifetime spending (today's $)
+                </th>
+                <th title="The single worst year's spending in one deterministic run at your plan's assumed fixed return — not from any Monte Carlo simulation">
+                  Lowest year (today's $)
+                </th>
+                <th title="The single best year's spending in that same one deterministic run">Highest year (today's $)</th>
+                <th title="% of Monte Carlo runs where guardrails cut spending at least once, and — in parentheses — the median across all runs of each run's own worst year. Guardrails only.">
+                  Cuts in sims (median worst year)
+                </th>
+                <th title="The worst year in the unlucky 10th-percentile simulation — how bad it gets when guardrails doesn't get lucky, not just the typical case">
+                  10th %ile worst year (sims)
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -115,9 +127,15 @@ export function StrategiesPage({ inputs, mcParams }: { inputs: PlanInputs; mcPar
               <tr>
                 <th>Strategy</th>
                 <th>{inputs.single ? 'Claim age' : `Claim ages (${inputs.you.name}/${inputs.spouse.name})`}</th>
-                <th>Lifetime SS received</th>
-                <th>Final balance</th>
-                {claiming.some((c) => c.lifetimeTax !== undefined) && <th>Lifetime taxes</th>}
+                <th title="Raw nominal sum of every SS check received over the plan's horizon — not discounted, and it mechanically favors claiming early when the projection ends sooner (fewer years for a bigger delayed check to catch up)">
+                  Lifetime SS received
+                </th>
+                <th title="Nominal portfolio balance in the plan's final year — reflects how claiming age changes portfolio withdrawals, not just the SS total above">
+                  Final balance
+                </th>
+                {claiming.some((c) => c.lifetimeTax !== undefined) && (
+                  <th title="Total federal + state taxes paid across the plan (detailed tax mode only)">Lifetime taxes</th>
+                )}
                 <th>Outcome</th>
               </tr>
             </thead>

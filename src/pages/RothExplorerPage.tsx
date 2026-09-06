@@ -100,11 +100,17 @@ export function RothExplorerPage({
             <thead>
               <tr>
                 <th>Strategy</th>
-                <th>Total converted</th>
-                <th>Lifetime taxes</th>
-                <th>Lifetime ACA subsidy</th>
-                <th>After-tax estate (today's $)</th>
-                <th>vs. no conversions</th>
+                <th title="Nominal sum of every year's Roth conversion amount across the whole plan">Total converted</th>
+                <th title="Nominal sum of federal + state tax paid across the whole plan — converting more now typically raises this to avoid larger RMD-driven taxes later">
+                  Lifetime taxes
+                </th>
+                <th title="Nominal sum of ACA premium subsidies received before Medicare age — converting more raises MAGI, which can shrink or eliminate this">
+                  Lifetime ACA subsidy
+                </th>
+                <th title="Final taxable + Roth balances, plus traditional balances after your assumed heir tax rate, deflated to today's dollars — this is what the ⭐ winner is ranked by">
+                  After-tax estate (today's $)
+                </th>
+                <th title="Difference in after-tax estate versus the 'No conversions' row">vs. no conversions</th>
                 <th>Outcome</th>
                 <th></th>
               </tr>

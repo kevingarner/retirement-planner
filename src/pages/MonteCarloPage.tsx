@@ -58,12 +58,18 @@ export function MonteCarloPage({ inputs, theme, params, onParamsChange }: Props)
           value={pct(mc.successRate, 1)}
           detail={`money lasts to ${inputs.startYear + Math.max(inputs.you.lifeExpectancy - inputs.you.currentAge, inputs.spouse.lifeExpectancy - inputs.spouse.currentAge)} in ${Math.round(mc.successRate * params.simulations)} of ${params.simulations} runs`}
           tone={mc.successRate >= 0.85 ? 'good' : mc.successRate < 0.7 ? 'bad' : undefined}
+          hint="Fraction of randomized runs where the portfolio never hits zero — each run draws an independent random return every year, with no memory between years, unlike Backtest's real sequences"
         />
-        <StatTile label="Median final balance" value={moneyCompact(mc.medianFinalBalance)} />
+        <StatTile
+          label="Median final balance"
+          value={moneyCompact(mc.medianFinalBalance)}
+          hint="Median across all runs, in nominal dollars at the end of the plan"
+        />
         <StatTile
           label="Median failure year"
           value={medianRunOut !== null ? String(medianRunOut) : '—'}
           detail={medianRunOut !== null ? 'among failing runs only' : 'no failing runs'}
+          hint="The middle value of the calendar year money ran out, counting only the runs that failed — a low success rate can still have a late median failure year if most failures happen near the very end"
         />
       </div>
 

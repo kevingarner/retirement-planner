@@ -108,8 +108,10 @@ export function ScenariosPage({ inputs, scenarios, theme, onSave, onDelete, onLo
               <tr>
                 <th>Scenario</th>
                 <th>Retirement year</th>
-                <th>At retirement</th>
-                <th>Final balance</th>
+                <th title="Nominal portfolio balance the moment the earlier-retiring spouse stops contributing and withdrawals begin">
+                  At retirement
+                </th>
+                <th title="Nominal balance in the plan's final year">Final balance</th>
                 <th>Outcome</th>
                 <th></th>
               </tr>
