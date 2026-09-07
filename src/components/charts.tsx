@@ -21,6 +21,24 @@ const axisTick = (theme: Theme) => ({ fill: theme.muted, fontSize: 12 });
 // Legend text wears text tokens; the swatch beside it carries the series color
 const legendText = (theme: Theme) => (value: string) => <span style={{ color: theme.ink2 }}>{value}</span>;
 
+// A fully custom legend, for charts whose Area/Bar `stroke` doesn't match its
+// own `fill` (e.g. a stroke used as a separator line between stacked bands) —
+// Recharts' built-in legend swatch defaults to each series' stroke, which
+// would otherwise render every icon in that separator color instead of its
+// actual series color.
+function ColorLegend({ theme, items }: { theme: Theme; items: { label: string; color: string }[] }) {
+  return (
+    <ul style={{ display: 'flex', justifyContent: 'center', gap: 16, padding: 0, margin: 0, listStyle: 'none', fontSize: 13 }}>
+      {items.map((it) => (
+        <li key={it.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span style={{ width: 10, height: 10, borderRadius: 2, background: it.color, display: 'inline-block', flexShrink: 0 }} />
+          <span style={{ color: theme.ink2 }}>{it.label}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function chartFrame(theme: Theme) {
   return {
     grid: <CartesianGrid stroke={theme.grid} strokeWidth={1} vertical={false} />,
@@ -150,7 +168,22 @@ export function AccountChart({ result, theme }: { result: ProjectionResult; them
         <XAxis dataKey="year" tick={axisTick(theme)} axisLine={{ stroke: theme.axis }} tickLine={false} />
         <YAxis tickFormatter={moneyCompact} tick={axisTick(theme)} axisLine={false} tickLine={false} width={70} />
         <Tooltip contentStyle={tooltipStyle} formatter={(v) => money(Number(v))} />
-        <Legend wrapperStyle={{ fontSize: 13 }} formatter={legendText(theme)} />
+        {/* Areas below set stroke to theme.surface for the thin separator line between
+            stacked bands, not to each series' own color — Recharts' default legend icon
+            uses a series' stroke, so without this custom legend every swatch here would
+            render in that same near-invisible surface color instead of its own fill. */}
+        <Legend
+          content={
+            <ColorLegend
+              theme={theme}
+              items={[
+                { label: 'Taxable', color: theme.series[0] },
+                { label: 'Traditional', color: theme.series[1] },
+                { label: 'Roth', color: theme.series[2] },
+              ]}
+            />
+          }
+        />
         <Area dataKey="Taxable" stackId="acct" stroke={theme.surface} strokeWidth={1} fill={theme.series[0]} fillOpacity={0.55} />
         <Area dataKey="Traditional" stackId="acct" stroke={theme.surface} strokeWidth={1} fill={theme.series[1]} fillOpacity={0.55} />
         <Area dataKey="Roth" stackId="acct" stroke={theme.surface} strokeWidth={1} fill={theme.series[2]} fillOpacity={0.55} />
